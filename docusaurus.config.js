@@ -155,7 +155,7 @@ const config = {
                 copyright: `تمامی حقوق مادی و معنوی این سایت متعلق به امیرحسین اباذری می‌باشد.`,
             },
             prism: {
-                theme: prismThemes.dracula,
+                theme: prismThemes.github,
                 darkTheme: prismThemes.dracula,
             },
         }),
