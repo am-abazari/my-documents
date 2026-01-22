@@ -28,7 +28,7 @@ html {
 }
 
 body, * {
-    box-size: border-box;
+    box-sizing: border-box;
     padding: 0;
     margin: 0;
     font-family: Vazirmatn, system-ui;
