@@ -217,3 +217,79 @@ const Component = () => {
 پس قبل از ارسال درخواست جدید درخواست قبلی را `abort` میکنیم
 
 این باعث میشه لود روی سرور خیلی کمتر بشه.
+
+
+## useReducer
+
+یکی از `state` های ری‌اکت هست که تغییرش باعث رندر مجدد کامپوننت میشه اما فرمت و عملکردش متفاوت از `useState` هست
+
+```jsx
+const [state, dispatch] = useReducer(reducer, initialState)
+```
+
+تعریف یک useReducer مانند نمونه‌ی بالا هست. که با `state` میتونیم مقدار حال حاضر رو بخونیم.
+
+`dispatch` یک `action` دریافت میکند و مقدار قبلی `state` را به همراه این `action` به تابع `reducer` پاس میدهد و تابع `reducer` باتوجه به نوع `action` تغییرات را اعمال میکند
+
+هرمقداری که تابع `reducer` برگردونه (return بکنه) درون `state` قرار میگیره.
+
+`initialState` هم مقدار اولیه‌ی این `state` است که هر دیتاتایپی میتواند باشد
+
+### Implementation
+
+فرض کن یک `counter` داریم که ۳ عمل میتونیم روش انجام بدیم. ۱. افزایش سه واحدی ۲. کاهش پنج واحدی ۳. صفر کردن `counter`
+
+```jsx
+import { useReducer } from "react";
+
+const reducer = (state, action) =>{
+    switch (action.type){
+       case ("increase") :
+           return state + action.payload
+       case ("decrease") :
+           return state - action.payload
+       case ("reset") :
+           return 0
+    }
+}
+
+const Component = () =>{
+    const [counter, dispatch] = useReducer(reducer, 0)
+    
+   return(
+       <div>
+          <p>{counter}</p>
+          <button onClick={()=>{dispatch({type : "increase", payload:3})}}>Increase 3</button>
+          <button onClick={()=>{dispatch({type : "decrease", payload:5})}}>Decrease 5</button>
+          <button onClick={()=>{dispatch({type : "reset"})}}>Reset</button>
+       </div>
+    )
+}
+```
+
+روند اجرای `useReducer` به این صورت است که ابتدا تابع `dispatch` با یک ورودی به نام `action` کال میشود که معمولا فرمت ورودی استاندارد `dispatch` مانند شکل زیر است
+
+```json
+{
+   "type": "...",
+   "payload": {
+    /* ... */
+   }
+}
+```
+پس از کال کردن `dispatch` مستقیما مقدار `action` و `state` حال حاضر به تابع `reducer` پاس داده میشود.
+
+حال ما به ازای `action` های متفاوت در `dispatch` باید در تابع `reducer` اونارو هندل کنیم که معمولا با `switch case` این اتفاق می‌افتد
+
+درنهایت هرمقداری که توسط تابع `reducer` برگردانده شود به عنوان مقدار جدید `state` قرار میگیرد
+
+
+### تفاوت useReducer و useState
+
+useReducer مفاهیمی مانند `dispatch` کردن را برای حالات مختلف دارد درحالی که مفهومی پشت `setState` لزوما نیست
+
+#### چه زمانی از useReducer به جای useState استفاده کنیم؟ 
+
+1. تعداد `action` ها خیلی زیاد باشد یا شباهت بسیار زیادی باهم داشته باشن
+2. برای api ها مناسب هست. چون میتونیم یک `action` برای ارور داشته باشیم و ارورهندلینگ راحتتر باش
+3. دیتاها سنگین باشن و نیاز به تعداد زیادی `useState` داشته باشیم درحالی که `reducer` همه تا حد خوبی یکسان است
