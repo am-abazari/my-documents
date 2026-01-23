@@ -83,3 +83,21 @@ const sum = numbers.reduce((accumulator, currentValue) => {
     return accumulator + currentValue;
 }, 0); // 57 = 12 + 10 + 3 + 4 + 7 + 9 + 13
 ```
+
+
+## Returns
+در جاواسکریپت اگر مقدار بازگشتی یک تابع صرفا یک چیز باشد و نیاز به موارد دیگر نباشد میتوان عبارت `return(...)` را با `(...)` جایگزین کرد
+
+```js
+const numbers = [12, 3, 54, 12, 45, 1]
+const newNumbers = numbers.map(number => {
+    const newNum = number*2+1;
+    return newNum
+}) // [25, 7, 109, 25, 91, 3]
+```
+میتوان با کد زیر جایگزین کرد
+
+```js
+const numbers = [12, 3, 54, 12, 45, 1]
+const newNumbers = numbers.map(number => (number*2+1)) // [25, 7, 109, 25, 91, 3]
+```
