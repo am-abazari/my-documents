@@ -23,6 +23,9 @@ sidebar_position: 1
 ### عکس‌های Illustrator طور
 [freepik.com](https://freepik.com/)
 
+### ساخت فایل `.gitignore`
+[gitignore.io](https://www.toptal.com/developers/gitignore)
+
 <hr />
 
 ## اصطلاح‌ها و موارد مهم

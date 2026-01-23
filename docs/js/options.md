@@ -25,7 +25,7 @@ const data = {
     }
 }
 
-const {id, name, adress:{city , postalCode}} = data
+const {id, name, address:{city , postalCode}} = data
 ```
 
 در این عملیات مقدارهای `id`, `name`, `city`, `postalCode`, `address` از داخل آبجکت `data` بدست می‌آیند و به عنوان یک متغیر با همین اسم‌ها ذخیره میشوند
