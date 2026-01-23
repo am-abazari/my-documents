@@ -26,7 +26,7 @@ sidebar_position: 1
 ### ساخت فایل `.gitignore`
 [gitignore.io](https://www.toptal.com/developers/gitignore)
 
-<hr />
+
 
 ## اصطلاح‌ها و موارد مهم
 

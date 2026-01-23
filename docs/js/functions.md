@@ -6,7 +6,7 @@ sidebar_position: 1
 
 توابع مهم `js` از جمله map, filter, find, reduce, ...
 
-<hr />
+
 
 ## Arrow Functions
 در `ES2016` این آپشن به جاواسکرپیت اضافه شده که به جای نوشتن کد کامل یک تابع اون رو با فلش نمایش میدهیم
@@ -19,7 +19,7 @@ const arrowFunction = (inputs) =>{
 }
 ```
 
-<hr />
+
 
 ## Callback Functions
 
@@ -37,7 +37,7 @@ console.log(callbackFunction((a, b) => (a + b), 10, 11)) // 21
 console.log(callbackFunction((a, b) => (a - b), 20, 11)) // 9
 
 ```
-<hr />
+
 
 ## Map
 روی یک آرایه پیمایش میکنه و نکته‌ی مهم این هست که بعد از اتمام پیمایش یک آرایه‌ی جدید برمیگردونه
@@ -48,7 +48,7 @@ const newNumbers = numbers.map((number, index) => number * index); // [0, 10, 6,
 ```
 
 
-<hr />
+
 
 ## Filter
 روی یک آرایه پیمایش میکنه و نکته‌ی مهم این هست که بعد از اتمام پیمایش یک آرایه‌ی جدید برمیگردونه
@@ -60,7 +60,7 @@ const numbers = [12, 10, 3, 4, 7, 8, 13]
 const newNumbers = numbers.filter((number, index) => number * index > 8); // [10, 4, 7, 8, 13]
 ```
 
-<hr />
+
 
 ## Find
 روی یک آرایه پیمایش میکنه و نکته‌ی مهم این هست که بعد از اتمام پیمایش یک آرایه‌ی جدید برمیگردونه
@@ -70,7 +70,7 @@ const numbers = [12, 10, 3, 4, 7, 8, 13]
 const newNumbers = numbers.filter((number, index) => number * index > 8); // 10
 ```
 
-<hr />
+
 
 ## Reduce
 وظیفه‌ی این تابع این هست که تمام مقادیر یک آرایه رو کاهش بده به یک چیز و خروجیش یک عضو هست

@@ -7,7 +7,7 @@ sidebar_position: 1
 ویژگی‌های `js` مانند spread operators, async await, destructuring, ...
 
 
-<hr />
+
 
 ## Destructuring
 زمانی که یک آبجکت داریم و نیاز به یک مقدار خاص داخلش داریم میتونیم از destructuring استفاده بکنیم
@@ -38,7 +38,7 @@ const {name: firstName, age} = data
 
 
 
-<hr />
+
 
 ## Spread Operators
 
@@ -64,7 +64,7 @@ const newUser = {
 } // { id: 12, name:"ali", age:23, petName:"tala" }
 ```
 
-<hr />
+
 
 ## Async | Await
 
@@ -88,7 +88,7 @@ const main = async () =>{
 }
 ```
 
-<hr />
+
 
 ## Export | Import
 
