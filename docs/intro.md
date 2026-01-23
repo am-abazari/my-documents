@@ -6,6 +6,9 @@ sidebar_position: 1
 
 اینجا میتونی تمام چیزایی که در روند یادگیریم به نظرم مهم اومدن و بعدا به دردم میخورن یا تجربیاتم رو بخونی !
 
+<hr/>
+
+
 ## سایت‌های مهم
 
 ### غلط املایی
@@ -20,3 +23,83 @@ sidebar_position: 1
 ### عکس‌های Illustrator طور
 [freepik.com](https://freepik.com/)
 
+<hr />
+
+## اصطلاح‌ها و موارد مهم
+
+### Node چیست ؟
+موتور جستجویی که توسعه پیدا کرده تا کد‌های `javascript` رو بتونه توی بکند هم اجرا بکنه، مثل موتور جستجوی V8 گوگل و یا ...
+
+### Boiler Plate چیست؟
+اصطلاح  `boiler plate` به معنی تکرار کد به صورت یکسان هست.
+برای مثال : 
+
+```js
+const males = [
+    {
+        name: "ali",
+        age: 14
+    },
+    {
+        name: "hossen",
+        age: 12
+    }
+]
+const females = [
+    {
+        name: "mina",
+        age: 50
+    },
+    {
+        name: "hoda",
+        age: 22
+    }
+]
+
+const C = A.sort((a, b) => {
+    if (a.age !== b.age) return 0;  
+    if (a.name !== b.name) return a.age - b.age;
+    return a.age.localeCompare(b.age);
+})
+const D = B.sort((a, b) => {
+    if (a.age !== b.age) return 0;
+    if (a.name !== b.name) return a.age - b.age;
+    return a.age.localeCompare(b.age);
+})
+```
+
+در این حالت همانطور که مشاهده میشود تابع مقایسه چندین بار صدا شده درحالی که کدی کاملا ثابت داره.
+اگر تعداد sort ها بیشتر میشد این تابع چندین بار دیگه به صورت تکراری تکرار میشد
+که این درواقع همان `boiler plate` است
+که برای جلوگیری ازش باید بخش تکراری را `reusable` بکنیم
+
+```js title="config.js"
+const males = [
+    {
+        name: "ali",
+        age: 14
+    },
+    {
+        name: "hossen",
+        age: 12
+    }
+]
+const females = [
+    {
+        name: "mina",
+        age: 50
+    },
+    {
+        name: "hoda",
+        age: 22
+    }
+]
+
+const compare = (a,b) => {
+    if (a.age !== b.age) return 0;
+    if (a.name !== b.name) return a.age - b.age;
+    return a.age.localeCompare(b.age);
+}
+const C = A.sort(compare);
+const D = B.sort((compare);
+```
