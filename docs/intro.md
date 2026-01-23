@@ -101,5 +101,5 @@ const compare = (a,b) => {
     return a.age.localeCompare(b.age);
 }
 const C = A.sort(compare);
-const D = B.sort((compare);
+const D = B.sort(compare);
 ```
