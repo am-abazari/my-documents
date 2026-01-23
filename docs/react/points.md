@@ -153,6 +153,9 @@ return (
 ```
 
 ## Props
+
+### تعریف
+
 این آپشن برای پاس دادن مقادیری از کامپوننت پدر به کامپوننت فرزند است.
 
 ```jsx title="Parent.jsx"
@@ -184,3 +187,147 @@ const Child = ({data, children, ...props}) =>{
 از طرفی ما از `data` به طور مستقیم در یک `useState` به دلخواه استفاده کردیم.
 
 بدیهی است در این مثال از روش props destructuring استفاده کردیم. ما میتونیم به طور مستقیم ابتدا `props` رو بگیریم و هرجا دلمون خواست از `props.data` یا `props.id` و ... استفاده کنیم اما در اینجا آنها را destructure کردیم
+
+### Props Passing
+
+در پاس دادن `prop` ما میتونیم انواع مختلف `prop` مانند توابع، متغیرها، کامپوننت و ... پاس داد
+
+#### Pass Function
+میتونیم انواع توابع رو به عنوان `prop` پاس بدیم. یکی از متداول ترینشون تابع `setState` است
+
+```jsx title="Parent.jsx" {1,5,9}
+const increaseFunction = (value) =>{
+    // ...
+}
+
+const [count, setCount] = useState(10);
+
+const Parent = () =>{
+    return(
+        <Children increase={increaseFunction} setCount={setCount} />
+    )
+}
+```
+
+```jsx title="Children.jsx" {3,4}
+const Children = ({ increase, setCount }) =>{
+    
+    increase(12);
+    setCount(18)
+    
+    return (
+        <> ... </>
+    )
+}
+```
+
+#### Pass JSX or Component
+
+ما به راحتی میتونی المنت‌ها، کامپوننت‌ها و... رو به صورت `prop` پاس بدیم
+
+```jsx title="Parent.jsx" {1,5,9}
+import OtherComponent from "../components/OtherComponent"
+
+const Parent = () =>{
+    return(
+        <Children ShowComponent={OtherComponent} Message={<p>successfully created OtherComponent</p>} />
+    )
+}
+```
+
+```jsx title="Children.jsx" {5,4}
+const Children = ({ ShowComponent, Message }) =>{
+    return (
+        <> 
+            <ShowComponent />
+            <Message />
+            ...
+        </>
+    )
+}
+```
+
+
+### Props Drilling
+مفهوم پاس دادن یک `prop` به چندین لایه کامپوننت پایینتر هست.
+
+برای مثال اگر `counter` در کامپوننت پدر وجود داشته باشد و آنرا به کامپوننت فرزند پاس دهد، سپس کامپوننت فرزند به کامپوننت نوه پاس دهد، و همینطور این `prop` پایینتر برود یعنی عملیات props drilling اتفاق افتاده که از دریل کردن و پایین رفتن میاد
+
+```
+Parent.jsx
+Children.jsx
+...
+ChldrensChildren.jsx
+```
+
+```jsx title="Parent.jsx"
+import Children from "./Children"
+
+const Parent = () =>{
+    return(
+        <Children counter={12} />
+    )
+}
+```
+
+```jsx title="Children.jsx"
+import ChildrensChildren from "./ChildrensChildren"
+
+const Children = ({counter}) => {
+    return(
+        <ChildrensChildren counter={counter} />
+    )
+}
+```
+
+```jsx title="ChildrensChildren.jsx"
+const ChildrensChildren = ({counter}) =>{
+    return(
+        <p>{counter}</p>
+    )
+}
+```
+
+این مفهوم props drilling است
+
+برای حل این مشکل چند روش وجود دارد که بهترین و اصلی ترین آنها استفاده از state manager ها مانند `zustand`, `redux`, `context` و ... است
+
+اما یک روش بدون نیاز به state manager ها اینجا اشاره میکنیم
+<br />
+#### Component Composition
+در این روش بدون استفاده از state manager مشکل props drilling را تا حدی حل میکنیم
+
+به اینصورت که مستقیم فرزندی که از prop مدنظر ما استفاده میکند را درون `Parent.jsx` قرار میدهیم !
+
+```jsx title="Parent.jsx" {6-8}
+import Children from "./Children"
+import ChildrensChildren from "./ChildrensChildren"
+
+const Parent = () =>{
+    return(
+        <Children>
+            <ChildrensChildren counter={12} />
+        </Children>
+    )
+}
+```
+
+```jsx title="Children.jsx"
+const Children = ({children}) => {
+    return(
+        <>
+            {children}
+        </>
+    )
+}
+```
+
+```jsx title="ChildrensChildren.jsx"
+const ChildrensChildren = ({counter}) =>{
+    return(
+        <p>{counter}</p>
+    )
+}
+```
+
+درواقع در این روش تنها یکبار prop مدنظر را به کامپوننتی که ازش استفاده میکنه پاس میدهیم !
