@@ -73,7 +73,7 @@ const D = B.sort((a, b) => {
 که این درواقع همان `boiler plate` است
 که برای جلوگیری ازش باید بخش تکراری را `reusable` بکنیم
 
-```js title="config.js"
+```js
 const males = [
     {
         name: "ali",
