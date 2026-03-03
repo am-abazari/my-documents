@@ -3,20 +3,23 @@ sidebar_position: 1
 ---
 
 # شروع
+
 نحوه‌ی ساخت پروژه و شروع کار با ری‌اکت
 
-
 ## cra
+
 روشی هست که قدیمی شده و بسیار بسیار کند هست.
 ترجیح بر استفاده از `vite` هست چون برخی بهینه‌سازی هایی انجام داده که تبدیل به گزینه‌ی مطلوب تری میشه
+
 ```bash
 npx create-react-app app-name
 ```
+
 اگر توی دایرکتوریی که الان داخلش هستی میخوای بسازه و دایرکتوری جدید درست نکنه باید به جای `app-name` عبارت `.` بزنی
+
 ```bash
 npx create-react-app .
 ```
-
 
 ## vite
 
@@ -27,13 +30,11 @@ npm create vite@latest
 ```
 
 #### توضیح درباره‌ی کامنت `npm create`
+
 درکل این کامنت یک ساختار اولیه از پروژه میسازه. یعنی فایل‌های اولیه رو داخل دایرکتوری مدنظر قرار میده سپس با کامنت `npm install` پکیج‌های مدنظر رو نصب میکنه
 پس دلیل وجود فایل‌هایی مثل `App.jsx` و ... همین کامنت است
 
-
-
 ## ساختار اولیه
-
 
 ```jsx title="main.jsx"
 import React from "react";
@@ -42,18 +43,18 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-ReactDOM.createRoot(document.getElementById("root").render(
+ReactDOM.createRoot(
+  document.getElementById("root").render(
     <React.StrictMode>
-        <App />
-    </React.StrictMode>
-));
+      <App />
+    </React.StrictMode>,
+  ),
+);
 ```
 
-- ``ReactDom.createRoot`` : وظیفه‌ی سلکت کردن المنت اصلی را دارد و هرچی که توسط ری‌اکت رندر بشود را داخل `#root` میریزد
+- `ReactDom.createRoot` : وظیفه‌ی سلکت کردن المنت اصلی را دارد و هرچی که توسط ری‌اکت رندر بشود را داخل `#root` میریزد
 
-- ``React.StrictMode`` : همونطور که از اسمش مشخصه سختگیری میکنه و وظیفش اینه که هر تغییر استیتی رو ۲ بار ران بکنه تا درصورتی که ایرادی داشته باشه، ایرادش مشخص بشه
-
-
+- `React.StrictMode` : همونطور که از اسمش مشخصه سختگیری میکنه و وظیفش اینه که هر تغییر استیتی رو ۲ بار ران بکنه تا درصورتی که ایرادی داشته باشه، ایرادش مشخص بشه
 
 ```jsx title="App.jsx"
 import React from "react";
@@ -61,20 +62,13 @@ import React from "react";
 import "./App.css";
 
 function App() {
-    return (
-        <>
-
-        </>
-    );
+  return <></>;
 }
 
 export default App;
 ```
 
 درکل فایل `App.jsx` نباید شلوغ بشه و صرفا وظیفه‌ی رندر کردن باقی صفحات، هندل کردن `route` ها و ... را دارد
-
-
-
 
 ## نکات نهایی
 

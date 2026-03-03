@@ -6,98 +6,92 @@ sidebar_position: 1
 
 توابع مهم `js` از جمله map, filter, find, reduce, ...
 
-
-
 ## Arrow Functions
+
 در `ES2016` این آپشن به جاواسکرپیت اضافه شده که به جای نوشتن کد کامل یک تابع اون رو با فلش نمایش میدهیم
 
 ```js
-const arrowFunction = (inputs) =>{
-    // your code
-    
-    return (outputs)
-}
+const arrowFunction = (inputs) => {
+  // your code
+
+  return outputs;
+};
 ```
-
-
 
 ## Callback Functions
 
 توابعی که ورودی آنها یک تابع است مانند useEffect در react.js
 
-
 ```js
-
 const callbackFunction = (callback, a, b) => {
-    if (!a || !b) return 0;
-    return callback(a, b);
-}
+  if (!a || !b) return 0;
+  return callback(a, b);
+};
 
-console.log(callbackFunction((a, b) => (a + b), 10, 11)) // 21
-console.log(callbackFunction((a, b) => (a - b), 20, 11)) // 9
-
+console.log(callbackFunction((a, b) => a + b, 10, 11)); // 21
+console.log(callbackFunction((a, b) => a - b, 20, 11)); // 9
 ```
 
-
 ## Map
+
 روی یک آرایه پیمایش میکنه و نکته‌ی مهم این هست که بعد از اتمام پیمایش یک آرایه‌ی جدید برمیگردونه
 
 ```js
-const numbers = [12, 10, 3, 4, 7, 8, 13]
+const numbers = [12, 10, 3, 4, 7, 8, 13];
 const newNumbers = numbers.map((number, index) => number * index); // [0, 10, 6, 12, 28, 40, 78]
 ```
 
-
-
-
 ## Filter
+
 روی یک آرایه پیمایش میکنه و نکته‌ی مهم این هست که بعد از اتمام پیمایش یک آرایه‌ی جدید برمیگردونه
 و مقادیری که از شرط گذر کنن باقی میمونن
 یعنی در شرط filter باید صدق کنند
 و نکته ای که هست اینه که اگر به ازای هر عضو آرایه شرط برقرار باشه مقدار همون عضو رو برمیگردونه
+
 ```js
-const numbers = [12, 10, 3, 4, 7, 8, 13]
+const numbers = [12, 10, 3, 4, 7, 8, 13];
 const newNumbers = numbers.filter((number, index) => number * index > 8); // [10, 4, 7, 8, 13]
 ```
 
-
-
 ## Find
+
 روی یک آرایه پیمایش میکنه و نکته‌ی مهم این هست که بعد از اتمام پیمایش یک آرایه‌ی جدید برمیگردونه
 تنها تفاوت find با filter این هست که صرفا اولین مقداری که پیدا بکنه رو برمیگردونه. نه آرایه‌ای از اون مقادیر
+
 ```js
-const numbers = [12, 10, 3, 4, 7, 8, 13]
+const numbers = [12, 10, 3, 4, 7, 8, 13];
 const newNumbers = numbers.filter((number, index) => number * index > 8); // 10
 ```
 
-
-
 ## Reduce
+
 وظیفه‌ی این تابع این هست که تمام مقادیر یک آرایه رو کاهش بده به یک چیز و خروجیش یک عضو هست
 دو مقدار `accumulator` و `currentValue` میگیره که `accumulator` مقدار نهایی رو نگه میداره و هر تغییری باید روی این اعمال بشه.
 
 نکته: توی خط آخر بخش هایلایت شده مقدار 0 مقدار اولیه‌ی `accumulator` است
+
 ```js {4}
-const numbers = [12, 10, 3, 4, 7, 8, 13]
+const numbers = [12, 10, 3, 4, 7, 8, 13];
 const sum = numbers.reduce((accumulator, currentValue) => {
-    return accumulator + currentValue;
+  return accumulator + currentValue;
 }, 0); // 57 = 12 + 10 + 3 + 4 + 7 + 9 + 13
 ```
 
-
 ## Returns
+
 در جاواسکریپت اگر مقدار بازگشتی یک تابع صرفا یک چیز باشد و نیاز به موارد دیگر نباشد میتوان عبارت `return(...)` را با `(...)` جایگزین کرد
 
 ```js
-const numbers = [12, 3, 54, 12, 45, 1]
-const newNumbers = numbers.map(number => {
-    const newNum = number*2+1;
-    return newNum
-}) // [25, 7, 109, 25, 91, 3]
+const numbers = [12, 3, 54, 12, 45, 1];
+const newNumbers = numbers.map((number) => {
+  const newNum = number * 2 + 1;
+  return newNum;
+}); // [25, 7, 109, 25, 91, 3]
 ```
+
 میتوان با کد زیر جایگزین کرد
 
 ```js
-const numbers = [12, 3, 54, 12, 45, 1]
-const newNumbers = numbers.map(number => (number*2+1)) // [25, 7, 109, 25, 91, 3]
+const numbers = [12, 3, 54, 12, 45, 1];
+const newNumbers = numbers.map((number) => number * 2 + 1); // [25, 7, 109, 25, 91, 3]
 ```
