@@ -137,3 +137,220 @@ app.delete("/api/user", idValidator(), (req, res) => {
   else res.json({ message: "success" });
 });
 ```
+
+بهتر هست که مانند `zod` و برخی فرم ولیدیتورها یک تابع بنویسیم که درصورتی که ارور داشتیم فقط مسیج ارور هارو نشون بده و درغیراینصورت دیتا رو برگردونه
+
+برای مثل اگر ارور داشتیم `success: false` قرار بده و یک آرایه‌ای از ارور ها و درصورت نداشتن ارور `success: true` بشه و دیتا رو برگردونیم. **همچنین از این تابع میتونیم به عنوان میدلور استفاده کنیم**
+
+#### Manage Errors Function
+
+```js title="errorManager.js" {4,16-20}
+const { validationResult } = require("express-validator");
+
+const errorManager = (req, res, next) => {
+  const errors = validationResult(req);
+  let output = {
+    success: false,
+    errors: {},
+  };
+  const ers = errors.errors;
+  output.success = !Boolean(ers.length);
+
+  if (!output.success) {
+    ers.forEach((er) => (output.errors[er.path] = er.msg));
+
+    console.log(output);
+    throw {
+      status: 400,
+      message: "validation failed",
+      ...output,
+    };
+  }
+  next();
+};
+module.exports = errorManager;
+```
+
+درواقع این تابع وظیفه‌ی تمیز کردن ارورها رو داره و صرفا کلید و مسیج رو قرار میده برای هر ارور
+
+## Express Validation
+
+### Start
+
+یک پکیج برای ولیدیت کردن فرم ها هست که کاملا با `express-validator` متفاوت است
+
+از `joi` استفاده میکند و یکم کار کردن باهاش رو راحتتر کرده. در آموزش بعدی در رابطه با `joi` حرف میزنیم
+
+:::info
+`express-validation` مرحله به مرحله ولیدیت میکند و درصورتی که اولین جایی که ارور دریافت کند اونو برمیگردونه و بقیه‌ی فرم رو رها میکنه
+:::
+
+### Implementation
+
+```js title="auth.validator.js"
+const { Joi } = require("express-validation");
+
+const loginValidation = {
+  body: Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).max(24).required(),
+  }),
+};
+
+module.exports = { loginValidation };
+```
+
+```js title="server.js"
+const { validate } = require("express-validation");
+const { loginValidation } = require("./validator/auth.validator");
+
+app.post("/api/login", validate(loginValidation), (req, res) => {
+  res.json(req.body);
+});
+```
+
+### Custom Message
+
+برای هر ولیدیشن میتونیم یک مسیج دلخواه کاستوم قرار بدیم
+
+```js
+const loginValidation = {
+  body: Joi.object({
+    email: Joi.string().email().message("email is invalid").required(),
+    password: Joi.string()
+      .min(8)
+      .message("password is to short")
+      .max(24)
+      .message("password is to long")
+      .required(),
+  }),
+};
+```
+
+بعد هر آیتم ولیدیشن میتونیم یک تابع `message` قرار بدیم که پیام دلخواهمون باشه
+
+### Query & Params
+
+توی `express-validation` میتونیم query و params رو هم ولیدیت بکنیم.
+
+صرفا باید به ولیدیشنمون علاوه بر body مقادیر param و query رو هم اضافه کرد
+
+```js
+const loginValidation = {
+  body: Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).max(24).required(),
+  }),
+  params: Joi.object({
+    id: Joi.number().min(1).required(),
+  }),
+  query: Joi.object({
+    name: Joi.string().required().min(3),
+  }),
+};
+```
+
+در این حالت باید هم param آیدی داده شود و هم query نام به صورت زیر :
+
+```
+/api/login/12?name=ali
+```
+
+## Joi
+
+یک کتابخونه برای ولیدیت کردن فرم هست که صرفا `express-validation` یکم کار باهاش رو راحتتر کرده
+
+**Schema** :
+در Joi ولیدیشن به فرمت اسیکیما هست و توسط اسکیما ها ولیدیشن انجام میشود
+
+### Implementation
+
+```js title="auth.schema.js"
+const Joi = require("joi");
+
+const loginSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string()
+    .min(8)
+    .message("password must be least 8 chars")
+    .max(24)
+    .required(),
+});
+
+module.exports = { loginSchema };
+```
+
+```js title="server.js"
+const { loginSchema } = require("./schema/auth.schema");
+
+app.post("/api/login", async (req, res) => {
+  await loginSchema.validateAsync(req.body);
+  res.json(req.body);
+});
+```
+
+### Custom Message
+
+دقیقا مانند `express-validation` میتونیم جلوی هر بخش ولیدیشن تابع `message` رو قرار بدیم با پیام دلخواه
+
+```js {5,7}
+const loginSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string()
+    .min(8)
+    .message("password must be least 8 chars")
+    .max(24)
+    .message("password must be at most 24 chars")
+    .required(),
+});
+```
+
+### Query & Params
+
+برای این حالت باید برای بخش query و params یک درخواست هم یک اسکیما درست بکنیم
+
+یعنی باید هرکدوم از اونارو به صورت جداگانه به اسکیمای مدنظرش پاس بدیم
+
+```js title="auth.schema.js"
+const Joi = require("joi");
+
+const loginBodySchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string()
+    .min(8)
+    .message("password must be least 8 chars")
+    .max(24)
+    .required(),
+});
+
+const loginQuerySchema = Joi.object({
+  name: Joi.string().required().min(3),
+});
+
+const loginParamsSchema = Joi.object({
+  id: Joi.number().min(1).required(),
+});
+
+module.exports = { loginBodySchema, loginParamsSchema, loginQuerySchema };
+```
+
+```js title="server.js"
+const {
+  loginBodySchema,
+  loginParamsSchema,
+  loginQuerySchema,
+} = require("./schema/auth.schema");
+
+app.post("/api/login/:id", async (req, res) => {
+  await loginBodySchema.validateAsync(req.body);
+  await loginQuerySchema.validateAsync(req.query);
+  await loginParamsSchema.validateAsync(req.params);
+  res.json(req.body);
+});
+```
+
+در این حالت باید هم param آیدی داده شود و هم query نام به صورت زیر :
+
+```
+/api/login/12?name=ali
+```
