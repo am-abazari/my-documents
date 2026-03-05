@@ -363,3 +363,372 @@ app.use((err, req, res, next) => {
   });
 });
 ```
+
+## Router
+
+در بخش‌های قبل در رابطه با Routing صحبت کردیم. در اینجا در رابطه با روش بهتر یعنی استفاده از ماژول `Router` خود express حرف میزنیم
+
+### Start
+
+- در کل هدف مدیریت تمام مسیرها هست برای اینکار ما یک دایرکتوری در مسیر اصلی پروژه به نام `routes` درست میکنیم.
+
+- سپس به ازای هر مسیر یک فایل درست میکنیم. برای مثال ما داریم `/auth/login/` و یا `/auth/register/` یک فایل برای مسیر `auth` درست میکنیم.
+
+- درصورتی که برای مثال مسیر `auth` سنگین شود برای ان یک دایرکتوری درست میکنیم و برای هر مسیر داخل آن یک فایل
+
+- سپس هر مسیر را با استفاده از ماژول `Router` درون express.js تعریف میکنیم
+
+- درنهایت یک فایل مرجع به اسم `routes.js` میسازیم و تمامی مسیر هارا داخل آن قرار میدهیم.
+
+- درنهایت از این فایل `routes.js` به عنوان یک میدلور درون فایل اصلی برنامه یعنی `server.js` استفاده میکنیم که شامل تمام مسیر ها هست
+
+#### مثال :
+
+فرض کن فولدر بندی زیر رو داشته باشیم
+
+![Router Image](/img/router.png)
+
+ظ`routes.js` وظیفه‌ی تجمیع تمام مسیر هارا دارد و از آن درون `server.js` استفاده میکنیم
+
+### Implementation
+
+```js title="routes/auth.router.js"
+const { Router } = require("express");
+
+const router = Router();
+
+router.get("/login", (req, res, next) => {
+  res.send("auth login get");
+});
+
+router.post("/register", (req, res, next) => {
+  res.send("auth register post");
+});
+
+router.delete("/:id", (req, res, next) => {
+  res.send(`auth delete ${req.params.id}`);
+});
+
+module.exports = router;
+```
+
+```js title="routes/router.js"
+const { Router } = require("express");
+const authRouter = require("./auth.router");
+
+const router = Router();
+
+router.use("/auth", authRouter);
+
+module.exports = router;
+```
+
+```js title="server.js"
+const allRoutes = require("./routes/routers");
+
+app.use(allRoutes);
+```
+
+در این روش ابتدا اگر ما به مسیر `/auth/login/` درخواست بدیم مقدار `auth login get` کال میشود.
+
+ما میتونیم بقیه route هارو هم به همین طریق تعریف بکنیم و اضافه بکنیمشون
+
+```js title="routes/routers.js"
+const { Router } = require("express");
+const authRouter = require("./auth.router");
+const userRouter = require("./user.router");
+const dashboardRouter = require("./dashboard.router");
+
+const router = Router();
+
+router.use("/auth", authRouter);
+router.use("/user", userRouter);
+router.use("/dashboard", dashboardRouter);
+
+module.exports = router;
+```
+
+### Middleware For Router
+
+در اینجا بررسی میکنیم که چطور میتونیم میدلور برای router ها تعریف و استفاده بکنیم.
+
+:::info
+درکل توی یک درخواست چه با `router` هندلش بکنیم و چه با خود express فرمت به اینصورت هست که
+
+```js
+app.get("url", middleware1, middleware2, ...middlewareN);
+app.use("url", middleware1, middleware2, ...middlewareN);
+
+router.get("url", middleware1, middleware2, ...middlewareN);
+router.use("url", middleware1, middleware2, ...middlewareN);
+```
+
+یعنی تمامی تابع ها بعد url یک میدلور هستند که دونه به دونه توشون `next` صدا زده میشه و باید یکیشون جواب رو برگردونه پس فرقی نمیکنه که از `app.get` استفاده کنیم یا از `router.get` یا از `app.use` یا `router.use`
+
+از هرکدوم که استفاده کنیم میتونیم میدلور داخلش ست بکنیم
+:::
+
+<br />
+
+#### میدلور برای تمام API ها
+
+اگر یک میدلور برای تمامی api ها بخوایم باید جایی که `allRoutes` رو تعریف کردیم ست کنیم یعنی :
+
+```js title="server.js"
+const allRoutes = require("./routes/routers");
+
+const setTimeMiddleware = (req, res, next) => {
+  req.time = Date.now();
+  next();
+};
+app.use(setTimeMiddleware, allRoutes);
+```
+
+#### میدلور برای یک دسته از API ها
+
+اگر مثلا بخوایم یک میدلور برای تمام API های زیرمجموعه‌ی `/auth/` اجرا بشه باید اونو به روتر مدنظر اضافه کرد
+
+```js title="routes/routers.js"
+const setTimeMiddleware = (req, res, next) => {
+  req.time = Date.now();
+  next();
+};
+router.use("/auth", setTimeMiddleware, authRouter);
+```
+
+#### میدلور برای یک API خاص
+
+اگر بخوایم فقط یک API یک میدلور رو داشته باشه هم باید به روتر مربوطه اضافه بکنیمش
+
+```js title="routes/auth.router.js"
+const setTimeMiddleware = (req, res, next) => {
+  req.time = Date.now();
+  next();
+};
+router.get("/login", setTimeMiddleware, (req, res, next) => {
+  console.log(req.time);
+  res.send("auth login get");
+});
+```
+
+#### Other Way
+
+یک روش دیگه برای ست کردن میدلور استفاده از `router.use(middleware1,...middlewareN)` هست
+
+```js title="routes/routers.js {5}
+const setTimeMiddleware = (req, res, next) => {
+  req.time = Date.now();
+  next();
+};
+router.use(setTimeMiddleware, middleware1, ... , middlewareN);
+
+router.use("/auth", authRouter);
+router.use("/user", userRouter);
+router.use("/dashboard", dashboardRouter);
+```
+
+## Controller
+
+بهتر هست ما همواره بخش‌های مستقل از هم رو جدا کنیم. برای مثال middleware از router از controller از model و ... از هم همیشه جدا باشن
+
+در اینصورت خوانایی کد بسیار بالا میرود
+
+![Controller Image](/img/controller.png)
+
+اگر ساختار فولدر بندی بالا رو داشته باشیم :
+
+```js title="controllers/auth.controller.js"
+const loginController = (req, res, next) => {
+  res.send("auth login get");
+};
+const registerController = (req, res, next) => {
+  res.send("auth register post");
+};
+const deleteController = (req, res, next) => {
+  res.send(`auth delete ${req.params.id}`);
+};
+
+module.exports = {
+  loginController,
+  registerController,
+  deleteController,
+};
+```
+
+```js title="routes/auth.router.js"
+const { Router } = require("express");
+const {
+  loginController,
+  deleteController,
+  registerController,
+} = require("../controllers/auth.controller");
+
+const router = Router();
+
+router.get("/login", loginController);
+router.post("/register", registerController);
+router.delete("/:id", deleteController);
+
+module.exports = router;
+```
+
+## Cookies
+
+### Start
+
+برای استفاده از کوکی ها باید اونارو پارس کنیم و ما از پکیج `cookie-parser` استفاده میکنیم
+
+```bash
+npm install cookie-parser
+```
+
+و اونو به عنوان میدلور قرار میدهیم :
+
+```js
+const cookieParser = require("cookie-parser");
+
+app.use(cookieParser());
+```
+
+### Get Cookies
+
+برای دسترسی به کوکی های کاربر از `req.cookies` استفاده میکنیم
+
+```js {2}
+app.get("/get-cookies", (req, res, next) => {
+  const cookies = req.cookies;
+  res.json(cookies);
+});
+```
+
+### Set Cookies
+
+برای ست کردن کوکی از تابع `res.cookie(key,value)` استفاده میکنیم
+
+```js {2}
+app.get("/set-cookies", (req, res, next) => {
+  res.cookie("key", "value");
+  res.send("successfully added cookie");
+});
+```
+
+### Remove Cookies
+
+برای حذف کوکی از مرورگر باید از تابع `res.clearCookie` استفاده کرد
+
+```js {2}
+app.get("/set-cookies", (req, res, next) => {
+  res.clearCookie("key");
+  res.send("successfully remoeved cookie");
+});
+```
+
+### Cookie Options
+
+برخی آپشن‌ها برای کوکی‌ها داریم. برای مثال تا کی وجود داشته باشه و کی از بین بره و ...
+
+#### maxAge
+
+سن کوکی رو نشون میده و میگه چقدر دیگه وجود داشته باشه به میلی‌ثانیه
+
+```js {3}
+app.get("/set-cookies", (req, res, next) => {
+  res.cookie("key", "value", {
+    maxAge: 5000, // 5sec
+  });
+  res.send("successfully added cookies");
+});
+```
+
+بعد ۵ ثانیه کوکی از بین میرود
+
+#### expires
+
+تاریخ از بین رفتن کوکی رو میگیره که باید به فرمت `new Date(date)` باشه. یعنی همراه با تاریخ روز ساعت و ...
+
+```js {3}
+app.get("/set-cookies", (req, res, next) => {
+  res.cookie("key", "value", {
+    expires: new Date(Date.now() + 5000), // after 5 sec
+  });
+  res.send("successfully added cookies");
+});
+```
+
+بعد ۵ ثانیه کوکی از بین میرود
+
+#### httpOnly
+
+کوکی `httpOnly` به این منظور هست که کوکی مدنظر رو امنیتش رو بالاتر میبره.
+
+مفهومش اینه که تنها کوکی از طریق درخواست http قابل دسترس هست و برای مثال کتابخونه‌هایی که توی فرانت‌اند از اونا استفاده کردیم دسترسی به این کوکی‌ها ندارد
+
+```js {3}
+app.get("/set-cookies", (req, res, next) => {
+  res.cookie("key", "value", {
+    httpOnly: true,
+  });
+  res.send("successfully added cookies");
+});
+```
+
+#### signed
+
+در این متند مقدار value کوکی‌ها توسط یک `private key` که به `cookie-parser` میدهیم هش میشوند و در مرورگر کاربر به صورت هش شده ذخیره میشوند
+
+برای دریافت کوکی‌های هش شده به جای `req.cookies` باید از `req.signedCookies` استفاده کرد
+
+```js {1,4,9}
+app.use(cookieParser("40!331msdkkdsanf")); // custom private key
+
+app.get("/get-cookies", (req, res, next) => {
+  const signedCookies = req.signedCookies;
+  res.json(signedCookies);
+});
+
+app.get("/set-cookies", (req, res, next) => {
+  res.cookie("key", "value", {
+    signed: true,
+  });
+  res.send("successfully added cookies");
+});
+```
+
+مقدار private-key که توی توی قسمت `cookieParser` قرار میدیم باید یک کلید هش هشده باشه ترجیها
+
+#### secure
+
+این آپشن در کوکی‌ها امنیت کوکی هارو بالاتر میبره و دسترسی بهشون رو محدود تر میکنه
+
+```js {3}
+app.get("/set-cookies", (req, res, next) => {
+  res.cookie("key", "value", {
+    secure: true,
+  });
+  res.send("successfully added cookies");
+});
+```
+
+#### sameSite
+
+این آپشن سه حالت داره
+
+- `lax`: حالت پیشفرض کن کوکی هست و به معنی سست(ریلکس) هستش
+
+- `strict`: حالت سختگیرانه هست و با ریدارکت از یک صفحه سایت مثلا به درگاه پرداخت کوکی ها ارسال نمیشن و غیرقابل دسترس هست
+
+- `none`: برای مرورگر های قدیمی هست که کوکی‌ها همواره دردسترس هستن
+
+:::info
+همواره sameSite رو با secure استفاده کن. اگر samSite برابر `strict` شد secure رو هم برابر `true` بزار و اگر برابر `lax` یا `none` شد secure رو هم برابر `false` بزار
+:::
+
+```js {4}
+app.get("/set-cookies", (req, res, next) => {
+  res.cookie("key", "value", {
+    secure: true, // false
+    sameSite: "strict", // lax - none
+  });
+  res.send("successfully added cookies");
+});
+```
