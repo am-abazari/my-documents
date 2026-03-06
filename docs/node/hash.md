@@ -175,3 +175,126 @@ const hash = sha1(password);
 const md5 = require("md5");
 const hash = md5(password);
 ```
+
+## JWT
+
+مخفف json web token هست که در سایت [jwt.io](https://jwt.io) دردسترس است و روشی برای هش کردن توکن ها هست که شامل برخی اطلاعات داخلش میشود
+
+از ۳ بخش تشکیل شده توکن که توسط `.` از هم جدا میشوند
+
+1. بخش اول توکن پروتکل هش را نشان میدهد
+2. بخش دوم اطلاعاتی که درباره‌ی کاربر ما خودمان ست کردیم را نشان میدهد
+3. بخش سوم کلید هش را نشان میدهد
+
+بخش اول و دوم قابل decode هستند و نیاز به کار خاصی ندارد ولی بخش سوم تنها با کلید خصوصی قابل دسترس هست
+
+### Start
+
+```bash
+npm install jsonwebtoken
+```
+
+برای مثال اگر توکن زیر رو داشته باشیم
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InNhbGFtIiwiaWF0IjoxNzcyNzkxNjU1fQ.H3oPA8v9125Gf9FL2sO9eYue2MobMNwmJ6YF1uq8AtI
+
+از ۳ قسمت تشکیل شده که با `.` قابل جدا شدن هستن
+
+`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9` : مربوط به پروتکل هش هست و قابل دیکود کردن هست
+
+`eyJpZCI6InNhbGFtIiwiaWF0IjoxNzcyNzkxNjU1fQ` : مربوط به دیتایی هست که ما بهش دادیم و قابل دیکود کردن هست. درنتیجه دیتایی مانند آیدی کاربر، ایمیل کاربر و یا ... بهش بده که آنچنان اهمیتی نداشته باشه. مثلا پسورد نباید داده بشه بهش
+
+`H3oPA8v9125Gf9FL2sO9eYue2MobMNwmJ6YF1uq8AtI` : این بخش هش شده‌ی private key ما هست که غیر قابل دیکود هست
+
+### Create Token
+
+برای ساخت توکن باید از تابع `sign` پکیج jwt استفاده کرد به فرمت زیر
+
+```js
+jwt.sign(data, secret, options);
+```
+
+- بخش data همان داده‌هایی هست که ما برای هش کردن بهش میدیم و قابل decode کردن هست. برای مثال id کاربر یا ایمیل و ... میدیم معمولا
+- بخش secret همون private-key هست که برای هش کردن بخش سوم استفاده میشود
+- بخش options هم آپشن هایی مثل `algorithm` , `expiresIn`, `encoading` و ... رو داره
+
+#### مثال :
+
+```js
+const jwt = require("jsonwebtoken");
+
+const secret = "d2268bf968acbdb9b99fff5856227341";
+const token = jwt.sign({ id: "user_id", email: "user_email" }, secret, {
+  expiresIn: "1d", // 1000 = 1000ms, 1s = 1sec, 1d = 1day, 1w = 1week, ...
+  algorithm: "HS512",
+});
+```
+
+الگوریتم‌های متفاوتی برای هش کردن وجود داره ولی ما اینجا از `HS512` استفاده کردیم. برای مثال اگر از `RS512` استفاده کنیم باید عبارت `secret` ما یک ssh-key باشه
+
+خروجی کد بالا برابر زیر هست :
+
+eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJfaWQiLCJlbWFpbCI6InVzZXJfZW1haWwiLCJpYXQiOjE3NzI3OTIyMzUsImV4cCI6MTc3Mjg3ODYzNX0.Q-jPhWK6jJYWgIaGj3HZyKmhwVLOjQAyiUTkcpnKhI2b4KSArxORgJ-cKiNyX-qhfUbvHncqSL7MFjCOeaFXKQ
+
+این توکن رو درصورتی که توی سایت https://jwt.io اگر ببینیم میتونیم مشاهده کنیم که بخش data قابل استخراج هست
+
+### Decode
+
+ما میتونیم بخش‌های ۱(الگوریتم) و ۲(دیتایی که دادیم) رو decode و مشاهده کنیم بدون داشتن private-key
+
+```js
+jwt.decode(token);
+```
+
+#### مثال :
+
+```js
+const decoded = jwt.decode(
+  "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJfaWQiLCJlbWFpbCI6InVzZXJfZW1haWwiLCJpYXQiOjE3NzI3OTIyMzUsImV4cCI6MTc3Mjg3ODYzNX0.Q-jPhWK6jJYWgIaGj3HZyKmhwVLOjQAyiUTkcpnKhI2b4KSArxORgJ-cKiNyX-qhfUbvHncqSL7MFjCOeaFXKQ",
+);
+```
+
+خروجی کد بالا برابر زیر است :
+
+```json title="output"
+{
+  "id": "user_id",
+  "email": "user_email",
+  "iat": 1772792235,
+  "exp": 1772878635
+}
+```
+
+همانطور که مشاهده میشود بدون داشتن private-key ما تونیستیم به data دسترسی داشته باشیم
+
+### Verify
+
+فرق verify با decode این هست که با ما یک توکن رو با داشتن private-key یا همون secret تایید میکنیم. یعنی بررسی میکنیم که یک secret برای یک توکن هست یا نه
+
+```js
+jwt.verify(token, secret);
+```
+
+درصورت درست بودن secret مقادیر decode شده دقیقا مانند خروجی تابع decode برگردانده میشود و درصورت درست نبودن یک ارور پرتاب(throw) میشود
+
+#### مثال
+
+```js
+const verified = jwt.verify(
+  "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJfaWQiLCJlbWFpbCI6InVzZXJfZW1haWwiLCJpYXQiOjE3NzI3OTIyMzUsImV4cCI6MTc3Mjg3ODYzNX0.Q-jPhWK6jJYWgIaGj3HZyKmhwVLOjQAyiUTkcpnKhI2b4KSArxORgJ-cKiNyX-qhfUbvHncqSL7MFjCOeaFXKQ",
+  "d2268bf968acbdb9b99fff5856227341",
+);
+```
+
+خروجی کد بالا چون secret صحیح است به صورت زیر است :
+
+```json title="output"
+{
+  "id": "user_id",
+  "email": "user_email",
+  "iat": 1772792235,
+  "exp": 1772878635
+}
+```
+
+درصورت نادرست بودن secret ارور پرتاب میشود
