@@ -42,3 +42,14 @@ p,
 a {
   font-family: Vazirmatn, system-ui !important;
 }
+
+.table-of-contents {
+  li {
+    a {
+      font-weight: bolder;
+    }
+    ul a {
+      font-weight: normal;
+    }
+  }
+}
