@@ -819,3 +819,9 @@ LEFT JOIN `profile` ON `users`.`id`=`profile`.`userID`
 توی اینجا تمام user ها آورده میشه به همراه profile هایی که userID اشون برابر با id باشه
 
 خروجی نهایی همچنان مانند `INNER JOIN` شامل تمام سطرهای `profiles` و `users` میشود
+
+:::warning
+درباره‌ی LEFT, RIGHT JOIN و حتی OUTER JOIN و ... خودت بیشتر مطالعه بکن
+
+معمولا کمتر به کار میاد
+:::
