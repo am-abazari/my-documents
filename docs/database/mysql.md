@@ -51,6 +51,18 @@ DROP DATABASE db_name;
 DROP DATABASE IF EXISTS db_name;
 ```
 
+### Constraints
+
+محدودیت های قابل اعمال هستش روی دیتابیس که با تابع هنگام ساخت دیتابیس با`CHECK` انجام میشود
+
+```sql example
+CREATE TABLE table_name (
+  id  INT PRIMARY KEY AUTO_INCREMENT,
+  age INT NOT NULL,
+  CHECK ( age >= 18 )
+);
+```
+
 ### Collection Config Database
 
 نوع کالکشن‌های دیتابیس را مشخص میکند
@@ -459,18 +471,6 @@ MODIFY COLUMN column_name TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 <br />
 <br />
 
-## Constraints
-
-محدودیت های قابل اعمال هستش روی دیتابیس که با تابع `CHECK` انجام میشود
-
-```sql example
-CREATE TABLE table_name (
-  id  INT PRIMARY KEY AUTO_INCREMENT,
-  age INT NOT NULL,
-  CHECK ( age >= 18 )
-);
-```
-
 ## Index
 
 زمانی که دیتای یک دیتابیس خیلی سنگین میشود ما روی یک ستون index قرار میدیم که سرچ سریعتر بتونیم انجام بدیم. درواقع ترجیحا باید یونیک باشه که عملیات سرچ توسط binary_search بهتر انجام بشه
@@ -528,3 +528,294 @@ DROP INDEX index_name ON table_name;
 ```sql title="example"
 DROP INDEX phone_and_username_index ON table_name;
 ```
+
+## Triggers
+
+جزو مباحث پیشرفته‌ی MySQL هست.
+
+### Start
+
+وظیف‌ی Trigger این هست که زمانی که یک تغییر در دیتابیس رخ میدهد قبل از اعمال تغییر یا بعد از آن یک عملیاتی را انجام میدهد
+
+اون تغییر هرچیزی میتونه باشه. مثل INSERT, UPDATE, SELECT, DROP و ...
+
+### Before
+
+در این نمونه زمانی که یک ردیف در یک table ما INSERT میکنیم یک عملیات انجام میشود و نکته این هست که قبل از انجام عملیات INSERT عملیات مدنظر ما انجام میشود و سپس INSERT میشود
+
+```sql
+CREATE TRIGGER before_insert BEFORE INSERT ON table_name FOR EACH ROW
+BEGIN
+	My Job ...
+END;
+```
+
+توی این مثال به ازای هر درج سطر درون table_name یک تریگر با نام `before_insert` که دلخواه هست روش انجام میشه که کار مدنظر من رو انجام میده
+
+برای مثال اگر ما یک فرم برای ثبت نام یوزر داشته باشیم و بخوایم درصورتی که کاربر مقدار country رو خالی بزاره اونو برابر iran بکنیم قبل از هر عملیات ساخت یوزر باید به شکل زیر عمل کنیم :
+
+```sql title="example"
+DELIMITER $$
+
+CREATE TRIGGER set_country_trigger BEFORE INSERT ON users FOR EACH ROW
+BEGIN
+    IF NEW.country IS NULL THEN SET NEW.country = 'iran';
+    END IF;
+END$$
+
+DELIMITER ;
+```
+
+:::info
+با آبجکت `NEW` میتونیم به سطری که میخوایم ثبت کنیم دسترسی داشته باشیم
+
+و `DELIMITER` مقدار جدا کننده هست که در این مثال برای قاطی نشدنشون عوضش کردیم
+:::
+
+توی این مثال هنگام INSERT درون تیبل users درصورتی که سطر مدنظر مقدار country-اش خالی باشه اونوقت اونو iran ست میکنه
+
+میتونیم مثلا بزاریم وقتی کشورش اسرائیل بود اونو خالی ست بکنه
+
+```sql
+IF NEW.country="israel" THEN SET NEW.country = '';
+```
+
+### After
+
+این متد برای زمانی هست که ما بخوایم یک سطر درج بکنیم که پس از درج کردن سطر یک عملیات رو انجام میدهد همچنین این trigger با نامی که ست میکنیم براش قابل دسترس هست
+
+فرقش با حالت قبلی اینه که جای BEFORE و AFTER باید عوض بشه
+
+```sql
+CREATE TRIGGER after_insert AFTER INSERT ON table_name FOR EACH ROW
+BEGIN
+	My Job ...
+END;
+```
+
+برای مثال درصورتی که یک کالا به فروشگاه اضافه شود باید تعداد کل موجودی انبار عوض شود و برای اینکار میتونیم از نمونه‌ی زیر استفاده کنیم:
+
+```sql title="example"
+DELIMITER $$
+
+CREATE TRIGGER update_store_quantity AFTER INSERT ON products FOR EACH ROW
+BEGIN
+    UPDATE store SET quantity=quantity+NEW.count;
+END$$
+
+DELIMITER ;
+```
+
+`quantity=quantity+NEW.count` همون معنی `quantity+=NEW.count` رو میده چون داخل sql مستقیم به مقداری که میخوایم تغییر بدیم دسترسی داریم
+:::warning
+شما نمیتونی روی جدولی که روش trigger ست کردی تغییر اعمل کنی.
+
+یعنی اگر یک جدول تغییر کرد دیگه نیمتونی توی trigger-اش روی همون جدول تغییر اعمال کنی
+:::
+
+### Other Options
+
+همینطور علاوه بر `AFTER INSERT` و `BEFORE INSERT` میتونیم روی بقیه عملیات ها مثل `DELETE` یا `UPDATE` و `SELECT` هم انجام داد
+
+برای مثال در اینجا یک نمونه آورده شده که درواقع فرآیند validation سن در sql هست
+
+```sql {6,7}
+DELIMITER $$
+
+CREATE TRIGGER validate_age BEFORE UPDATE ON users FOR EACH ROW
+BEGIN
+    IF(NEW.age < OLD.age) THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT="age must be bigger than old age";
+    END IF;
+END$$
+
+DELIMITER ;
+```
+
+توی کد بالا چک میکنه که سن جدید از سن قدیمی باید بیشتر باشه وگرنه ارور برمیگردونه
+:::info
+در عبارت بالا ۲ متد `SIGNAL SQLSTATE` و `MESSAGE_TEXT` استفاده شده که برای برگردوندن ارور هست
+
+- SQLSTATE : یسری ارور کد ها مختلف برای SQL هست که هرکدام معنی خودشون رو داره
+- MESSAGE_TEXT : یک متن گلوبال توی SQL هست که متن ارور رو مشخص میکنه
+  :::
+
+## Relations
+
+یک مبحث پیشرفته‌ی دیگر درون MySQL است
+
+### Start
+
+مفهوم این مبحث این هست که ارتباط میان table های یک دیتابیس وجود داشته باشد. که دقیقا نقطه‌ی قوت دیتابیس‌های Relational نسبت به MongoDB و امثال آن است.
+
+برای مثال ما برای یک کاربر نام کاربری، پسورد، رمزعبور تصویر پروفایل آدرس و ... داریم. اگر تمام این موارد درون یک table باشن آنگاه هنگام گرفتن دیتا خیلی دیتای اضافه هم دریافت میشود. پس ما ۲ table جداگانه که یکی برای user و یکی برای profile هست میسازیم به طوری که میان این ۲ table ارتباط وجود دارد. هر کاربر یک سطر درون profile دارد و یک سطر درون user و این دو به هم متصل هستند
+
+### Foreign Key
+
+با استفاده از این متد ما بین یک فیلد یک table با یک فیلد یک table دیگر ارتباط (relation) برقرار میکنیم و در ادامه نحوه‌ی دریافت با توجه به ارتباط آنها را میگیم
+
+درکل با متد `FOREIGN KEY` مشخض میشه و هنگام ساختن دیتابیس یک فیلد از اون رو به یک فیلد دیگر یک دیتابیس دیگر `REFERENCES` میدیم
+
+```sql
+FOREIGN KEY (field_name) REFERENCES `table_name`(other_field_name)
+```
+
+برای مثال ما ۲ دیتابیس یکی برای user و یکی برای profile میسازیم که profile باید به user مرتبط شود
+
+```sql {15}
+CREATE TABLE `user` (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    fullname VARCHAR(100) NOT NULL,
+    username VARCHAR(100) NOT NULL,
+    password VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE `profile` (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    age INT,
+    bio TEXT,
+    image VARCHAR(50) DEFAULT "person.png",
+    city VARCHAR(50),
+    userID INT NOT NULL UNIQUE,
+    FOREIGN KEY (userID) REFERENCES `user`(id)
+);
+```
+
+در این مثال ما فیلد `userID` از تیبل profile رو به فیلد `id` از تیبل user رفرنس میدیم
+
+### Multiple Foreign Key
+
+یک فیلد میتونه با چند فیلد ارتباط داشته باشه و بلعکس یعنی چند فیلد میتونن با یک یا چند فیلد ارتباط داشته باشن
+
+برای اینکار صرفا باید چند `FOREIGN KEY` قرار داد
+
+```sql
+FOREIGN KEY (field_1) REFERENCES `tabled_1`(field_2),
+FOREIGN KEY (field_3) REFERENCES `tabled_2`(field_4),
+...
+```
+
+برای مثال یک سفارش محصول به محصول و خریدار که یک یوزر هست ارتباط داره:
+
+```sql title="example" {8,7}
+CREATE TABLE `orders` (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    amount DOUBLE NOT NULL,
+    description TEXT,
+    userID INT NOT NULL UNIQUE,
+    productID INT NOT NULL UNIQUE
+    FOREIGN KEY (userID) REFERENCES `users`(id)
+    FOREIGN KEY (productID) REFERENCES `products`(id)
+);
+```
+
+### Inner Join
+
+اگر دو فیلد از دو table متفاوت به هم ارتباط داشته باشن (Foreign key) میتونیم اشتراکشون رو با `INNER JOIN` بگیریم
+
+**نکته:** عملیات `INNER JOIN` درواقع میگرده دنبال ردیف‌هایی که توی ۲ تا table داده شده برابر باشن و سپس ستون های هر دو رو ادغام میکنه و خروجی میده
+
+یعنی اگر ما روی تیبل user و profile بیایم و `INNER JOIN` بزنیم تمام ستون‌های user و profile رو درکنار هم میده بهمون
+
+سینتکسش به صورت زیر هست:
+
+```sql
+SELECT * FROM `table_1`
+INNER JOIN `table_2` ON `table_1`.`field_1`=`table_2`.`field_2`
+```
+
+برای مثال اگر ما دنبال یوزر هایی باشیم که برای خودشون profile تشکیل دادن و اطلاعات یوزر رو به همراه اطلاعات profile اش بخوایم میتونیم روی تیبل‌های `profile` و `user` بیایم و `INNER JOIN` بزنیم
+
+```sql title="example"
+SELECT * FROM `user`
+INNER JOIN `profile` ON `user`.id=`profile`.`userID`
+```
+
+خروجی کد بالا تمام ردیف‌هایی درون profile هست که profile.userID اش برابر با user.id باشه و خروجی شامل تمام ستون‌های تیبل profile و user هست
+
+ما میتونیم بگیم کدوم ستون‌هارو میخوایم
+
+برای مثال اگر ما دنبال تصویر کاربر هستیم و نام کاربریش میتونیم تعریف کنیم که فقط اون دوتارو بده
+
+```sql
+SELECT user.username as username, profile.image as profilePic FROM `user`
+INNER JOIN `profile` ON `user`.id=`profile`.`userID`
+```
+
+توی این مثال میگرده دنبال سطرهای مشترک بین تیبل `profile` و `user` به طوری که نقطه‌ی اشتراکشون userID و id باشه که از قبل بین اونا `FOREIGN KEY` تعریف کردیم و ستون `username` رو از تیبل `user` برمیداره و اسمشو میزاره `username` و ستون `image` از تیبل `profile` رو برمیداره و اسمشو میزاره `profilePic` و این دو ستون رو برمیگردونه
+
+### Multiple Inner Join
+
+ما میتونیم چندین تا `INNER JOIN` هم فرابخوانیم به طوری که باید بین همه‌ی table ها اشتراک داشته باشیم و ستون‌های خروجی اجتماع تمام ستون‌های table ها هستن
+
+```sql
+SELECT * FROM `table_1`
+INNER JOIN `table_2` ON `table_1`.`field_1`=`table_2`.`field_2`
+INNER JOIN `table_3` ON `table_1`.`field_3`=`table_3`.`field_4`
+INNER JOIN `table_4` ON `table_1`.`field_5`=`table_4`.`field_6`
+...
+```
+
+ستون‌های خروجی برابر تمام ستون‌های table_1 تا table_4 درکنار هم هستن
+
+برای مثال ما دنبال یک تراکنش هستیم که اونو با تیبل `products` و `users` بخوایم ادغام کنیم
+
+```sql title="example"
+SELECT * FROM `orders`
+INNER JOIN `users` ON `user`.id=`orders`.`userID`
+INNER JOIN `products` ON `products`.id=`orders`.`productdID`
+```
+
+در این مثال دنبال تمام order هایی میگرده که `userID` اش برابر آیدی یک یوزر باشه و `productID` اش برابر آیدی یک محصول باشه و اطلاعات یوزر(user) به همراه اطلاعات محصول(product) خریداری شده و اطلاعات سفارش(order) همرو کنار هم برمیگردونه.
+
+برای مثال اگر من درمثال بالا فقط دنبال نام محصول باشم و تاریخ ثبت سفارش و یوزرنیم خریدار میتونم به شکل زیر عمل بکنم :
+
+```sql title="example"
+SELECT `users`.username as username,`orders`.date as oderDate, `products`.name as productName
+FROM `orders`
+INNER JOIN `users` ON `users`.id=`orders`.`userID`
+INNER JOIN `products` ON `products`.id=`orders`.`productdID`
+```
+
+تو این مثال ستون‌های `username`, `orderDate`, `productsName` رو برمیگردونه
+
+### Left, Right Join
+
+یک متد دیگر هست برای تیبل‌هایی که باهم ارتباط دارن
+
+- فرض کن ما دو تیبل `users` و `profiles` رو داریم. اگر از `users` روی `profile` ما `LEFT JOIN` بزنیم تمام `user` هارو برمیگردونه به همراه `profile` هایی که relation دارن
+- اگر ما از `users` روی `profile` بیایم و `RIGHT JOIN` بزنیم اینبار تمام `profile` هارو برمیگردونه به همراه `user` هایی که relation دارن
+
+درواقع توی این روش ما یکی از تیبل‌هارو به طور کامل برمیگردونیم بدون هیچ وابستگیی ولی تیبل دیگر رو فقط ردیف‌هایی رو برمیگردونیم که relation دارن
+
+نکته: ستون‌های خروجی اجتماع تمام ستون‌های دو تیبل داده شده هستند
+
+#### LEFT JOIN
+
+```sql
+SELECT * FROM `table_1`
+LEFT JOIN `table_2` ON `table_1`.`field_1`=`table_2`.`field_2`
+```
+
+در اینجا تمام سطرهای `table_1` رو برمیگردونه و از `table_2` تنها سطر‌هایی رو برمیگردونه که `table_2.field_2 = table_1.field_1` براقرار باشه
+
+#### RIGHT JOIN
+
+```sql
+SELECT * FROM `table_1`
+RIGHT JOIN `table_2` ON `table_1`.`field_1`=`table_2`.`field_2`
+```
+
+در اینجا تمام سطرهای `table_2` رو برمیگردونه و از `table_1` تنها سطرهایی رو برمیگردونه که `table_2.field_2 = table_1.field_1` برقرار باشه
+
+#### EXAMPLE
+
+```sql
+SELECT * FROM `users`
+LEFT JOIN `profile` ON `users`.`id`=`profile`.`userID`
+```
+
+توی اینجا تمام user ها آورده میشه به همراه profile هایی که userID اشون برابر با id باشه
+
+خروجی نهایی همچنان مانند `INNER JOIN` شامل تمام سطرهای `profiles` و `users` میشود
