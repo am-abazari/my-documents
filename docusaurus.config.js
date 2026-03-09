@@ -20,7 +20,7 @@ const config = {
   },
 
   // Set the production url of your site here
-  url: "https://docs.abazari.ir",
+  url: "https://docs.amabazari.ir",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: "/",
@@ -55,7 +55,7 @@ const config = {
           sidebarPath: "./sidebars.js",
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: "https://github.com/am-abazari/documents",
+          editUrl: "https://github.com/am-abazari/my-documents",
         },
         blog: {
           showReadingTime: true,
@@ -65,7 +65,7 @@ const config = {
           },
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: "https://github.com/am-abazari/documents",
+          editUrl: "https://github.com/am-abazari/my-documents",
           // Useful options to enforce blogging best practices
           onInlineTags: "warn",
           onInlineAuthors: "warn",
@@ -100,7 +100,7 @@ const config = {
             label: "Documents",
           },
           {
-            href: "https://github.com/am-abazari/documents",
+            href: "https://github.com/am-abazari/my-documents",
             label: "GitHub",
             position: "right",
           },
