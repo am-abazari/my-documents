@@ -63,3 +63,40 @@ const { verifyTokne } = require("@function/token");
 ```
 
 سپس به این نحو استفاده میکنیم ازش
+
+### Typescript Config
+
+اگر با تایپ‌اسکریپت توسعه میدی میتونی توی فایل `tsconfig.json` مسیرهارو تعریف کنی
+
+```json lines title="tsconfig.json"
+{
+  "compilerOptions": {
+    // ...
+    "paths": {
+      "@/*": ["./src/*"],
+      "@controller/*": ["./src/controller/*"],
+      "@model/*": ["./src/model/*"],
+      "@middleware/*": ["./src/middleware/*"],
+      "@router/*": ["./src/router/*"],
+      "@util/*": ["./src/util/*"],
+      "@config/*": ["./src/util/config/*"],
+      "@function/*": ["./src/util/function/*"]
+    }
+  }
+}
+```
+
+سپس نیازی به هیچ ایمپورت و چیز خاصی نیست صرفا توی فایل‌ها میتونی به راحتی ازش استفاده کنی
+
+```js title="example"
+// router
+const { RegisterController } = require("@controller/auth/register.controller");
+const { LoginController } = require("@controller/auth/login.controller");
+const { LogoutController } = require("@controller/auth/logout.controller");
+
+// model
+const { UserModel } = require("@model/user.model");
+
+// function
+const { verifyTokne } = require("@function/token");
+```
