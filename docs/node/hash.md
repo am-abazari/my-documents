@@ -113,6 +113,25 @@ const salt = crypto.randomBytes(16).toString("hex");
 const hash = crypto.createHmac("sha1", salt).update("password").digest("hex");
 ```
 
+### randomInt
+
+یک تابع برای جنیرت کردن یک عدد رندوم بین دو بازه هست
+و بازه‌ی ما به صورت `(min,max]` هست یعنی میتونه مقدار min رو اخذ کنه ولی max رو نه
+
+```js
+crypto.randomInt(min, max); // [min, max)
+```
+
+برای مثال برای ساخت یک کد OTP به طول length کد زیر رو داریم :
+
+```js
+const crypto = require("crypto");
+
+const createOTP = (length) => {
+  return crypto.randomInt(Math.pow(10, length - 1), Math.pow(10, length));
+};
+```
+
 ## Bcrypt
 
 توی این کتابخونه دردسر های ساخت salt و اضافه کردنش به هش نهایی و سپس split کردنش رو نداریم
