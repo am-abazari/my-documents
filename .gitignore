@@ -272,3 +272,4 @@ fabric.properties
 
 
 yarn.lock
+package-lock.json
